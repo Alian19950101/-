@@ -18,10 +18,26 @@ from telegram.ext import (
 )
 import yt_dlp as youtube_dl
 from yt_dlp.utils import DownloadError
+from flask import Flask, request
+import threading
+
+# Flask Server Setup
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot is running!"
+
+def run_flask():
+    app.run(host='0.0.0.0', port=10000)
+
+flask_thread = threading.Thread(target=run_flask)
+flask_thread.daemon = True
+flask_thread.start()
 
 # إعدادات البوت
-TOKEN = "7872075207:AAHy75gQAHyTFxIs0lg5Eu7MhiDckV6_2ak"
-BOT_USERNAME = "MN.Py"
+TOKEN = os.environ.get("TOKEN", "7872075207:AAHy75gQAHyTFxIs0lg5Eu7MhiDckV6_2ak")
+BOT_USERNAME = "بوت التحميلات السريعة "
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 
 # إعدادات التسجيل
@@ -96,7 +112,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         parse_mode="Markdown"
     )
 
-# تم التعديل هنا: تحويل الدالة إلى متزامنة
 def get_video_info_sync(url: str) -> dict:
     """الحصول على معلومات الفيديو (نسخة متزامنة)"""
     try:
@@ -106,10 +121,17 @@ def get_video_info_sync(url: str) -> dict:
             'socket_timeout': 30,
             'ignoreerrors': True,
             'noplaylist': True,
-            'cookiefile': None,
+            'extract_flat': True,
+            'cookiefile': 'cookies.txt',
+            'extractor_args': {
+                'tiktok': {
+                    'app_version': '10.2.0',
+                    'manifest_app_version': '1020'
+                }
+            },
             'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Referer': 'https://twitter.com/',
+                'User-Agent': 'com.zhiliaoapp.musically/2022701030 (Linux; U; Android 7.1.2; en; SM-G965N; Build/N2G48H;tt-ok/3.12.13.1)',
+                'Referer': 'https://www.tiktok.com/',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'Accept-Language': 'en-US,en;q=0.5',
                 'DNT': '1'
@@ -125,7 +147,6 @@ def get_video_info_sync(url: str) -> dict:
             
             # معالجة المدة
             duration = info.get('duration', 0)
-            # إذا كانت المدة غير متوفرة أو صفر، نعرض "غير معروف"
             if duration:
                 minutes = int(duration // 60)
                 seconds = int(duration % 60)
@@ -137,7 +158,6 @@ def get_video_info_sync(url: str) -> dict:
             thumbnails = info.get('thumbnails', [])
             best_thumbnail = ''
             if thumbnails:
-                # نبحث عن صورة بدقة عالية
                 best_res = 0
                 for thumb in thumbnails:
                     if thumb.get('width', 0) > best_res:
@@ -157,7 +177,6 @@ def get_video_info_sync(url: str) -> dict:
         logger.error(f"خطأ غير متوقع: {str(e)}")
         return None
 
-# تم التعديل هنا: دالة تنزيل متزامنة
 def download_video_sync(url: str) -> str:
     """تنزيل الفيديو (نسخة متزامنة)"""
     try:
@@ -170,9 +189,15 @@ def download_video_sync(url: str) -> str:
             'retries': 5,
             'ignoreerrors': True,
             'noplaylist': True,
+            'extractor_args': {
+                'tiktok': {
+                    'app_version': '10.2.0',
+                    'manifest_app_version': '1020'
+                }
+            },
             'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Referer': 'https://twitter.com/',
+                'User-Agent': 'com.zhiliaoapp.musically/2022701030 (Linux; U; Android 7.1.2; en; SM-G965N; Build/N2G48H;tt-ok/3.12.13.1)',
+                'Referer': 'https://www.tiktok.com/',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'Accept-Language': 'en-US,en;q=0.5',
                 'DNT': '1'
@@ -215,7 +240,6 @@ async def handle_video_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     processing_msg = await update.message.reply_text("⚡ جاري التحليل...")
     
     try:
-        # تم التعديل هنا: استخدام التنفيذ في مؤشر ترابط منفصل
         loop = asyncio.get_running_loop()
         video_info = None
         for attempt in range(3):
@@ -261,7 +285,6 @@ async def handle_video_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                     caption=caption,
                     parse_mode="Markdown"
                 )
-                # بعد إرسال الصورة، نبدأ التنزيل
                 progress_msg = await update.message.reply_text("⚡ جاري التحميل...")
                 start_time = time.time()
                 
@@ -278,7 +301,6 @@ async def handle_video_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                 return
         except Exception as e:
             logger.error(f"خطأ في إرسال الصورة: {str(e)}")
-            # إذا فشل إرسال الصورة، نكمل كنص
             pass
         
         info_msg = await update.message.reply_text(
@@ -286,7 +308,6 @@ async def handle_video_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             parse_mode="Markdown"
         )
         
-        # تم التعديل هنا: تنزيل الفيديو في مؤشر ترابط منفصل
         progress_msg = await update.message.reply_text("⚡ جاري التحميل...")
         start_time = time.time()
         
@@ -310,7 +331,6 @@ async def send_video_to_user(update: Update, context: ContextTypes.DEFAULT_TYPE,
     try:
         file_size = os.path.getsize(file_path)
         
-        # إرسال الفيديو مع خيارات مختلفة حسب الحجم
         if file_size > MAX_FILE_SIZE:
             await update.message.reply_document(
                 document=open(file_path, 'rb'),
@@ -369,9 +389,10 @@ def main() -> None:
     
     # تشغيل البوت
     app.run_polling(
-        poll_interval=0.5,
+        poll_interval=1.0,
         drop_pending_updates=True,
-        allowed_updates=Update.ALL_TYPES
+        allowed_updates=Update.ALL_TYPES,
+        close_loop=False
     )
 
 if __name__ == '__main__':
