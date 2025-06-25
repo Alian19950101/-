@@ -1,6 +1,5 @@
-python-telegram-bot==20.3
-yt-dlp==2024.6.22
-httpx==0.27.0
-PyYAML==6.0.1
-browser-cookie3==0.19.1
-flask==3.0.2
+python-telegram-bot[ext]~=20.6
+yt-dlp
+httpx
+aiohttp
+pyyaml
