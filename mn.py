@@ -16,7 +16,10 @@ from telegram.ext import (
     MessageHandler,
     filters
 )
-import yt_dlp as youtube_dl
+try:
+    import yt_dlp as youtube_dl
+except ImportError:
+    import youtube_dl
 from yt_dlp.utils import DownloadError
 from flask import Flask, request
 import threading
@@ -37,7 +40,7 @@ flask_thread.start()
 
 # إعدادات البوت
 TOKEN = os.environ.get("TOKEN", "7872075207:AAHy75gQAHyTFxIs0lg5Eu7MhiDckV6_2ak")
-BOT_USERNAME = "بوت التحميلات السريعة "
+BOT_USERNAME = "MN.Py"
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 
 # إعدادات التسجيل
