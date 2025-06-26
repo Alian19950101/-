@@ -2,25 +2,52 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
+import subprocess
 import logging
 import time
 import re
 import asyncio
-import httpx
 import signal
 from urllib.parse import urlparse
-from telegram import Update
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    ContextTypes,
-    MessageHandler,
-    filters
-)
-import yt_dlp as youtube_dl
-from yt_dlp.utils import DownloadError
 import aiohttp
 from aiohttp import web
+
+# تثبيت الحزم المطلوبة
+required_packages = [
+    "python-telegram-bot==20.6",
+    "httpx==0.25.2",
+    "aiohttp==3.9.5",
+    "pyyaml==6.0.1",
+    "yt-dlp==2024.6.22"
+]
+
+try:
+    from telegram import Update
+    from telegram.ext import (
+        Application,
+        CommandHandler,
+        ContextTypes,
+        MessageHandler,
+        filters
+    )
+    import httpx
+    import yt_dlp as youtube_dl
+    from yt_dlp.utils import DownloadError
+except ImportError:
+    print("جاري تثبيت الحزم المطلوبة...")
+    subprocess.check_call([sys.executable, "-m", "pip", "install"] + required_packages)
+    from telegram import Update
+    from telegram.ext import (
+        Application,
+        CommandHandler,
+        ContextTypes,
+        MessageHandler,
+        filters
+    )
+    import httpx
+    import yt_dlp as youtube_dl
+    from yt_dlp.utils import DownloadError
 
 # إعدادات البوت - التوكن من متغيرات البيئة
 TOKEN = os.environ.get("TOKEN", "7872075207:AAHy75gQAHyTFxIs0lg5Eu7MhiDckV6_2ak")
