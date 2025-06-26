@@ -27,7 +27,7 @@ threading.stack_size(256 * 1024 * 1024)  # 256MB stack size
 os.environ['PYTHONUNBUFFERED'] = '1'
 
 # إعدادات البوت
-TOKEN = os.getenv('TOKEN', 'ضع_توكن_البوت_هنا')
+TOKEN = os.getenv('TOKEN', '7872075207:AAHy75gQAHyTFxIs0lg5Eu7MhiDckV6_2ak')
 BOT_USERNAME = "MN_Py_Bot"
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 MAX_RETRIES = 3
