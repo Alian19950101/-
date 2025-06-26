@@ -8,6 +8,8 @@ import re
 import asyncio
 import httpx
 import signal
+import subprocess
+import sys
 from urllib.parse import urlparse
 from telegram import Update
 from telegram.ext import (
@@ -17,8 +19,17 @@ from telegram.ext import (
     MessageHandler,
     filters
 )
-import yt_dlp as youtube_dl
-from yt_dlp.utils import DownloadError
+
+# محاولة استيراد yt-dlp مع حل بديل
+try:
+    import yt_dlp as youtube_dl
+    from yt_dlp.utils import DownloadError
+except ImportError:
+    logging.warning("yt-dlp غير مثبت، جاري التثبيت الآن...")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "yt-dlp==2024.6.22"])
+    import yt_dlp as youtube_dl
+    from yt_dlp.utils import DownloadError
+
 import aiohttp
 from aiohttp import web
 
