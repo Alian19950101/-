@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: telegram-downloader-bot
+    runtime: python
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python mn.py
+    environment:
+      - key: PYTHON_VERSION
+        value: 3.10.13
