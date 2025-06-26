@@ -1,16 +1,10 @@
 services:
   - type: web
-    name: mn-py-bot
-    runtime: python
-    buildCommand: |
-      pip install --upgrade pip
-      pip install -r requirements.txt
-      python -m yt_dlp --update
-    startCommand: python mn.py
+    name: telegram-video-bot
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python mn.py"
     envVars:
-      - key: PYTHONUNBUFFERED
-        value: 1
       - key: TOKEN
-        value: 7872075207:AAHy75gQAHyTFxIs0lg5Eu7MhiDckV6_2ak
-      - key: MAX_CONCURRENT_DOWNLOADS
-        value: 2
+        value: "7872075207:AAHy75gQAHyTFxIs0lg5Eu7MhiDckV6_2ak"
