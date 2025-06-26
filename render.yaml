@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: mn-py-bot
+    env: python
+    buildCommand: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+    startCommand: bash start.sh
+    envVars:
+      - key: TOKEN
+        value: "7872075207:AAHy75gQAHyTFxIs0lg5Eu7MhiDckV6_2ak"
+      - key: PYTHONUNBUFFERED
+        value: "1"
