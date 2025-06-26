@@ -1,5 +1,5 @@
 python-telegram-bot==20.6
-httpx==0.25.2  # إصدار متوافق مع python-telegram-bot
-aiohttp==3.9.5
-pyyaml==6.0.1
-yt-dlp==2024.6.22
+yt-dlp==2023.11.16
+httpx==0.25.0
+PyYAML==6.0.1
+ffmpeg-python==0.2.0
