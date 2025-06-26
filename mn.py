@@ -7,6 +7,7 @@ import time
 import re
 import asyncio
 import httpx
+import signal
 from urllib.parse import urlparse
 from telegram import Update
 from telegram.ext import (
@@ -21,7 +22,7 @@ from yt_dlp.utils import DownloadError
 import aiohttp
 from aiohttp import web
 
-# إعدادات البوت - يفضل وضع التوكن في متغيرات البيئة
+# إعدادات البوت - التوكن من متغيرات البيئة
 TOKEN = os.environ.get("TOKEN", "7872075207:AAHy75gQAHyTFxIs0lg5Eu7MhiDckV6_2ak")
 BOT_USERNAME = "MN.Py"
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
@@ -361,6 +362,7 @@ def run_bot():
     bot_app.add_error_handler(error_handler)
     
     # تشغيل البوت
+    logger.info("جارٍ تشغيل البوت...")
     bot_app.run_polling(
         poll_interval=0.5,
         drop_pending_updates=True,
@@ -370,9 +372,6 @@ def run_bot():
 async def web_server():
     """إنشاء خادم ويب بسيط لريندر"""
     app = web.Application()
-    # إضافة مسار للصفحة الرئيسية للتحقق من عمل الخادم
-    app.router.add_get("/", lambda request: web.Response(text="Bot is running!"))
-
     runner = web.AppRunner(app)
     await runner.setup()
     port = int(os.environ.get("PORT", 5000))
@@ -381,6 +380,18 @@ async def web_server():
     logger.info(f"خادم الويب يعمل على المنفذ {port}")
     # انتظار إلى الأبد
     await asyncio.Event().wait()
+
+def handle_exit(signum, frame):
+    """معالجة إشارة الخروج لتنظيف الموارد"""
+    logger.info("تلقي إشارة إنهاء، جاري التنظيف...")
+    # تنظيف الملفات المؤقتة
+    for filename in os.listdir(DOWNLOAD_FOLDER):
+        try:
+            os.remove(os.path.join(DOWNLOAD_FOLDER, filename))
+        except:
+            pass
+    logger.info("تم التنظيف بنجاح، إيقاف البوت.")
+    os._exit(0)
 
 async def main():
     """الدالة الرئيسية لتشغيل البوت وخادم الويب"""
@@ -392,4 +403,9 @@ async def main():
     await web_server()
 
 if __name__ == '__main__':
+    # تسجيل معالج الإشارات
+    signal.signal(signal.SIGINT, handle_exit)
+    signal.signal(signal.SIGTERM, handle_exit)
+    
+    # تشغيل التطبيق
     asyncio.run(main())
