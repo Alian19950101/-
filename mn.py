@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
-import subprocess
 import logging
 import time
 import re
@@ -19,21 +17,8 @@ from telegram.ext import (
     MessageHandler,
     filters
 )
-
-# التحقق من تثبيت yt-dlp
-try:
-    import yt_dlp as youtube_dlp
-    from yt_dlp.utils import DownloadError
-except ImportError:
-    print("yt-dlp غير مثبت، جاري التثبيت الآن...")
-    subprocess.check_call([
-        sys.executable, 
-        "-m", "pip", "install", 
-        "git+https://github.com/yt-dlp/yt-dlp.git@2024.06.22"
-    ])
-    import yt_dlp as youtube_dlp
-    from yt_dlp.utils import DownloadError
-
+import yt_dlp as youtube_dl
+from yt_dlp.utils import DownloadError
 import aiohttp
 from aiohttp import web
 
@@ -133,7 +118,7 @@ def get_video_info_sync(url: str) -> dict:
             }
         }
         
-        with youtube_dlp.YoutubeDL(ydl_opts) as ydl:
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             
             if not info:
@@ -195,7 +180,7 @@ def download_video_sync(url: str) -> str:
             }
         }
         
-        with youtube_dlp.YoutubeDL(ydl_opts) as ydl:
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             file_path = ydl.prepare_filename(info)
         
