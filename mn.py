@@ -51,7 +51,7 @@ os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 # قائمة الانتظار للتحميلات المتزامنة
 download_semaphore = asyncio.Semaphore(MAX_CONCURRENT_DOWNLOADS)
 
-# عميل HTTP محسن - تم تعطيل HTTP/2 هنا
+# عميل HTTP محسن
 http_client = httpx.AsyncClient(
     timeout=REQUEST_TIMEOUT,
     headers={
@@ -59,7 +59,7 @@ http_client = httpx.AsyncClient(
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
     },
     limits=httpx.Limits(max_connections=10, max_keepalive_connections=5),
-    http2=False,  # تم تعطيل HTTP/2 هنا
+    http2=False,
     follow_redirects=True
 )
 
@@ -467,9 +467,7 @@ def main() -> None:
         app.run_polling(
             poll_interval=1.5,
             drop_pending_updates=True,
-            allowed_updates=Update.ALL_TYPES,
-            close_loop=False,
-            stop_signals=[]
+            allowed_updates=Update.ALL_TYPES
         )
     except Exception as e:
         logger.critical(f"خطأ فادح في التشغيل: {str(e)}")
