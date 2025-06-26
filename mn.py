@@ -25,13 +25,13 @@ import threading
 threading.stack_size(256 * 1024 * 1024)  # 256MB stack size
 os.environ['PYTHONUNBUFFERED'] = '1'
 
-# إعدادات البوت (يُفضل استخدام متغيرات البيئة)
+# إعدادات البوت
 TOKEN = os.getenv('TOKEN', '7872075207:AAHy75gQAHyTFxIs0lg5Eu7MhiDckV6_2ak')
 BOT_USERNAME = "MN.Py"
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
-MAX_RETRIES = 3  # عدد المحاولات عند الفشل
-REQUEST_TIMEOUT = 45  # ثانية
-MAX_CONCURRENT_DOWNLOADS = 2  # لمنع ازدحام الذاكرة
+MAX_RETRIES = 3
+REQUEST_TIMEOUT = 45
+MAX_CONCURRENT_DOWNLOADS = 2
 
 # إعدادات متقدمة للتسجيل
 logging.basicConfig(
@@ -44,14 +44,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# مجلد التنزيلات مع تحسينات لـ Render
+# مجلد التنزيلات
 DOWNLOAD_FOLDER = os.path.join(os.getcwd(), "MN_Py_Downloads")
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 # قائمة الانتظار للتحميلات المتزامنة
 download_semaphore = asyncio.Semaphore(MAX_CONCURRENT_DOWNLOADS)
 
-# عميل HTTP محسن
+# عميل HTTP محسن - تم تعطيل HTTP/2 هنا
 http_client = httpx.AsyncClient(
     timeout=REQUEST_TIMEOUT,
     headers={
@@ -59,7 +59,7 @@ http_client = httpx.AsyncClient(
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
     },
     limits=httpx.Limits(max_connections=10, max_keepalive_connections=5),
-    http2=True,
+    http2=False,  # تم تعطيل HTTP/2 هنا
     follow_redirects=True
 )
 
