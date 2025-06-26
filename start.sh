@@ -2,24 +2,15 @@
 echo "🚀 بدء تشغيل بوت MN.Py..."
 echo "🔧 تثبيت المتطلبات الإضافية..."
 
-# إنشاء مجلد مؤقت لتنزيل yt-dlp
-mkdir -p temp_download
-cd temp_download
-
-# تنزيل yt-dlp مباشرة من GitHub
-wget https://github.com/yt-dlp/yt-dlp/releases/download/2024.06.22/yt-dlp
-
-# تثبيت yt-dlp يدويًا
-chmod +x yt-dlp
-sudo mv yt-dlp /usr/local/bin/yt-dlp
-
-# العودة إلى المجلد الرئيسي
-cd ..
-rm -rf temp_download
-
-# تثبيت باقي المتطلبات
+# تثبيت المتطلبات الأساسية
 pip install --upgrade pip
-pip install -r requirements.txt
+pip install python-telegram-bot[ext]==20.6 httpx==0.27.0 aiohttp==3.9.5 pyyaml==6.0.1
+
+# تثبيت yt-dlp من المصدر الصحيح
+pip install git+https://github.com/yt-dlp/yt-dlp.git@2024.06.22
+
+# تنظيف ذاكرة التخزين المؤقت
+rm -rf ~/.cache/pip
 
 echo "✅ تم تثبيت المتطلبات بنجاح"
 python mn.py
