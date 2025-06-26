@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
+import subprocess
 import logging
 import time
 import re
 import asyncio
 import httpx
 import signal
-import subprocess
-import sys
 from urllib.parse import urlparse
 from telegram import Update
 from telegram.ext import (
@@ -20,14 +20,18 @@ from telegram.ext import (
     filters
 )
 
-# محاولة استيراد yt-dlp مع حل بديل
+# التحقق من تثبيت yt-dlp
 try:
-    import yt_dlp as youtube_dl
+    import yt_dlp as youtube_dlp
     from yt_dlp.utils import DownloadError
 except ImportError:
-    logging.warning("yt-dlp غير مثبت، جاري التثبيت الآن...")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "yt-dlp==2024.6.22"])
-    import yt_dlp as youtube_dl
+    print("yt-dlp غير مثبت، جاري التثبيت الآن...")
+    subprocess.check_call([
+        sys.executable, 
+        "-m", "pip", "install", 
+        "git+https://github.com/yt-dlp/yt-dlp.git@2024.06.22"
+    ])
+    import yt_dlp as youtube_dlp
     from yt_dlp.utils import DownloadError
 
 import aiohttp
@@ -129,7 +133,7 @@ def get_video_info_sync(url: str) -> dict:
             }
         }
         
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        with youtube_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             
             if not info:
@@ -191,7 +195,7 @@ def download_video_sync(url: str) -> str:
             }
         }
         
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        with youtube_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             file_path = ydl.prepare_filename(info)
         
