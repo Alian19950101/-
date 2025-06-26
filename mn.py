@@ -21,8 +21,8 @@ from yt_dlp.utils import DownloadError
 import aiohttp
 from aiohttp import web
 
-# إعدادات البوت
-TOKEN = "7872075207:AAHy75gQAHyTFxIs0lg5Eu7MhiDckV6_2ak"
+# إعدادات البوت - يفضل وضع التوكن في متغيرات البيئة
+TOKEN = os.environ.get("TOKEN", "7872075207:AAHy75gQAHyTFxIs0lg5Eu7MhiDckV6_2ak")
 BOT_USERNAME = "MN.Py"
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 
@@ -98,7 +98,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         parse_mode="Markdown"
     )
 
-# تم التعديل هنا: تحويل الدالة إلى متزامنة
 def get_video_info_sync(url: str) -> dict:
     """الحصول على معلومات الفيديو (نسخة متزامنة)"""
     try:
@@ -127,7 +126,6 @@ def get_video_info_sync(url: str) -> dict:
             
             # معالجة المدة
             duration = info.get('duration', 0)
-            # إذا كانت المدة غير متوفرة أو صفر، نعرض "غير معروف"
             if duration:
                 minutes = int(duration // 60)
                 seconds = int(duration % 60)
@@ -139,7 +137,6 @@ def get_video_info_sync(url: str) -> dict:
             thumbnails = info.get('thumbnails', [])
             best_thumbnail = ''
             if thumbnails:
-                # نبحث عن صورة بدقة عالية
                 best_res = 0
                 for thumb in thumbnails:
                     if thumb.get('width', 0) > best_res:
@@ -159,7 +156,6 @@ def get_video_info_sync(url: str) -> dict:
         logger.error(f"خطأ غير متوقع: {str(e)}")
         return None
 
-# تم التعديل هنا: دالة تنزيل متزامنة
 def download_video_sync(url: str) -> str:
     """تنزيل الفيديو (نسخة متزامنة)"""
     try:
@@ -217,7 +213,6 @@ async def handle_video_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     processing_msg = await update.message.reply_text("⚡ جاري التحليل...")
     
     try:
-        # تم التعديل هنا: استخدام التنفيذ في مؤشر ترابط منفصل
         loop = asyncio.get_running_loop()
         video_info = None
         for attempt in range(3):
@@ -263,7 +258,6 @@ async def handle_video_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                     caption=caption,
                     parse_mode="Markdown"
                 )
-                # بعد إرسال الصورة، نبدأ التنزيل
                 progress_msg = await update.message.reply_text("⚡ جاري التحميل...")
                 start_time = time.time()
                 
@@ -274,14 +268,12 @@ async def handle_video_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                     return
                 
                 download_time = time.time() - start_time
-                # الإصلاح هنا: استخدام التنسيق الصحيح للأرقام
                 await progress_msg.edit_text(f"✅ تم التحميل في {download_time:.1f} ثانية")
                 
                 await send_video_to_user(update, context, file_path, "أفضل جودة")
                 return
         except Exception as e:
             logger.error(f"خطأ في إرسال الصورة: {str(e)}")
-            # إذا فشل إرسال الصورة، نكمل كنص
             pass
         
         info_msg = await update.message.reply_text(
@@ -289,7 +281,6 @@ async def handle_video_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             parse_mode="Markdown"
         )
         
-        # تم التعديل هنا: تنزيل الفيديو في مؤشر ترابط منفصل
         progress_msg = await update.message.reply_text("⚡ جاري التحميل...")
         start_time = time.time()
         
@@ -300,7 +291,6 @@ async def handle_video_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             return
         
         download_time = time.time() - start_time
-        # الإصلاح هنا: استخدام التنسيق الصحيح للأرقام
         await progress_msg.edit_text(f"✅ تم التحميل في {download_time:.1f} ثانية")
         
         await send_video_to_user(update, context, file_path, "أفضل جودة")
@@ -314,7 +304,6 @@ async def send_video_to_user(update: Update, context: ContextTypes.DEFAULT_TYPE,
     try:
         file_size = os.path.getsize(file_path)
         
-        # إرسال الفيديو مع خيارات مختلفة حسب الحجم
         if file_size > MAX_FILE_SIZE:
             await update.message.reply_document(
                 document=open(file_path, 'rb'),
@@ -355,7 +344,14 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             pass
 
 def run_bot():
-    """تشغيل البوت في وضع polling بشكل متزامن"""
+    """تشغيل البوت في وضع polling"""
+    # تنظيف الملفات القديمة
+    for filename in os.listdir(DOWNLOAD_FOLDER):
+        try:
+            os.remove(os.path.join(DOWNLOAD_FOLDER, filename))
+        except:
+            pass
+    
     # إنشاء التطبيق
     bot_app = Application.builder().token(TOKEN).build()
     
@@ -363,13 +359,6 @@ def run_bot():
     bot_app.add_handler(CommandHandler("start", start))
     bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_video_url))
     bot_app.add_error_handler(error_handler)
-    
-    # تنظيف الملفات القديمة
-    for filename in os.listdir(DOWNLOAD_FOLDER):
-        try:
-            os.remove(os.path.join(DOWNLOAD_FOLDER, filename))
-        except:
-            pass
     
     # تشغيل البوت
     bot_app.run_polling(
@@ -379,19 +368,22 @@ def run_bot():
     )
 
 async def web_server():
-    """إنشاء خادم ويب بسيط"""
+    """إنشاء خادم ويب بسيط لريندر"""
     app = web.Application()
+    # إضافة مسار للصفحة الرئيسية للتحقق من عمل الخادم
+    app.router.add_get("/", lambda request: web.Response(text="Bot is running!"))
+
     runner = web.AppRunner(app)
     await runner.setup()
     port = int(os.environ.get("PORT", 5000))
     site = web.TCPSite(runner, host='0.0.0.0', port=port)
     await site.start()
-    print(f"خادم الويب يعمل على المنفذ {port}")
+    logger.info(f"خادم الويب يعمل على المنفذ {port}")
     # انتظار إلى الأبد
     await asyncio.Event().wait()
 
 async def main():
-    """الدالة الرئيسية"""
+    """الدالة الرئيسية لتشغيل البوت وخادم الويب"""
     # تشغيل البوت في مؤشر ترابط منفصل
     loop = asyncio.get_running_loop()
     bot_task = loop.run_in_executor(None, run_bot)
