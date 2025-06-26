@@ -160,8 +160,9 @@ def get_video_info_sync(url: str) -> dict:
 def download_video_sync(url: str) -> str:
     """تنزيل الفيديو (نسخة متزامنة)"""
     try:
+        # إعدادات yt-dlp محسنة للتوافق مع Render
         ydl_opts = {
-            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+            'format': 'best[ext=mp4]',
             'outtmpl': os.path.join(DOWNLOAD_FOLDER, '%(id)s.%(ext)s'),
             'quiet': True,
             'no_warnings': True,
@@ -169,6 +170,7 @@ def download_video_sync(url: str) -> str:
             'retries': 5,
             'ignoreerrors': True,
             'noplaylist': True,
+            'nocheckcertificate': True,
             'http_headers': {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                 'Referer': 'https://twitter.com/',
