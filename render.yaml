@@ -3,6 +3,7 @@ services:
     name: mn-py-bot
     runtime: python
     buildCommand: |
+      pip install --upgrade pip
       pip install -r requirements.txt
       python -m yt_dlp --update
     startCommand: python mn.py
@@ -13,5 +14,3 @@ services:
         value: 7872075207:AAHy75gQAHyTFxIs0lg5Eu7MhiDckV6_2ak
       - key: MAX_CONCURRENT_DOWNLOADS
         value: 2
-    healthCheckPath: /health
-    plan: free
